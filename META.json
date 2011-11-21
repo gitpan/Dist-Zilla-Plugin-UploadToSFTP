@@ -4,7 +4,7 @@
       "Mark Gardner <mjgardner@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.200006, CPAN::Meta::Converter version 2.110930",
+   "generated_by" : "Dist::Zilla version 4.300003, CPAN::Meta::Converter version 2.112621",
    "license" : [
       "perl_5"
    ],
@@ -27,11 +27,13 @@
             "MooseX::Has::Sugar" : 0,
             "MooseX::Types::Moose" : 0,
             "Net::Netrc" : 0,
-            "Net::SFTP::Foreign::Exceptional" : 0,
+            "Net::SFTP::Foreign" : 0,
             "Try::Tiny" : 0,
             "namespace::autoclean" : 0,
             "perl" : "5.008",
-            "utf8" : 0
+            "strict" : 0,
+            "utf8" : 0,
+            "warnings" : 0
          }
       },
       "test" : {
@@ -49,12 +51,13 @@
       "bugtracker" : {
          "web" : "https://github.com/mjgardner/Dist-Zilla-Plugin-UploadToSFTP/issues"
       },
+      "homepage" : "http://search.cpan.org/dist/Dist-Zilla-Plugin-UploadToSFTP/",
       "repository" : {
          "type" : "git",
          "url" : "git://github.com/mjgardner/Dist-Zilla-Plugin-UploadToSFTP.git",
          "web" : "https://github.com/mjgardner/Dist-Zilla-Plugin-UploadToSFTP"
       }
    },
-   "version" : "0.001"
+   "version" : "0.002"
 }
 

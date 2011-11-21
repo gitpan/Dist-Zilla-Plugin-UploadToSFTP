@@ -1,30 +1,17 @@
-#
-# This file is part of Dist-Zilla-Plugin-UploadToSFTP
-#
-# This software is copyright (c) 2011 by GSI Commerce.
-#
-# This is free software; you can redistribute it and/or modify it under
-# the same terms as the Perl 5 programming language system itself.
-#
+package Dist::Zilla::Plugin::UploadToSFTP;
+
 use 5.008;
 use strict;
 use warnings;
 use utf8;
 
-package Dist::Zilla::Plugin::UploadToSFTP;
-
-BEGIN {
-    $Dist::Zilla::Plugin::UploadToSFTP::VERSION = '0.001';
-}
-
-# ABSTRACT: Upload tarball to my own site
-
+our $VERSION = '0.002';    # VERSION
 use English '-no_match_vars';
 use Moose;
 use MooseX::Has::Sugar;
 use MooseX::Types::Moose qw(Bool Str);
 use Net::Netrc;
-use Net::SFTP::Foreign::Exceptional;
+use Net::SFTP::Foreign;
 use Try::Tiny;
 use namespace::autoclean;
 with 'Dist::Zilla::Role::Releaser';
@@ -33,21 +20,21 @@ has [qw(site directory)] => ( ro, required, isa => Str );
 
 has debug => ( ro, isa => Bool, default => 0 );
 
-has _sftp => ( ro, lazy_build, isa => 'Net::SFTP::Foreign::Exceptional' );
+has _sftp => ( ro, lazy_build, isa => 'Net::SFTP::Foreign' );
 
-sub _build__sftp
-{    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+sub _build__sftp {    ## no critic (ProhibitUnusedPrivateSubroutines)
     my $self = shift;
 
     my %sftp_args = (
         host     => $self->site,
         user     => $self->login,
         password => $self->password,
+        autodie  => 1,
     );
     if ( $self->debug ) { $sftp_args{more} = '-v' }
 
     my $sftp;
-    try { $sftp = Net::SFTP::Foreign::Exceptional->new(%sftp_args) }
+    try { $sftp = Net::SFTP::Foreign->new(%sftp_args) }
     catch { $self->log_fatal($ARG) };
     return $sftp;
 }
@@ -57,8 +44,7 @@ has _netrc => ( ro, lazy_build,
     handles => [qw(login password)],
 );
 
-sub _build__netrc
-{    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+sub _build__netrc {    ## no critic (ProhibitUnusedPrivateSubroutines)
     my $self  = shift;
     my $site  = $self->site;
     my $netrc = Net::Netrc->lookup($site)
@@ -76,11 +62,7 @@ sub release {
 
     try { $sftp->put( ("$archive") x 2 ) } catch { $self->log_fatal($ARG) };
 
-    my $remote_size;
-    {
-        ## no critic (ValuesAndExpressions::ProhibitAccessOfPrivateData)
-        $remote_size = $sftp->ls("$archive")->{a}->size || 0;
-    }
+    my $remote_size = $sftp->stat("$archive")->size || 0;
     my $local_size = $archive->stat->size;
     if ( $remote_size != $local_size ) {
         $self->log( "Uploaded file is $remote_size bytes, "
@@ -93,6 +75,8 @@ sub release {
 
 __PACKAGE__->meta->make_immutable();
 1;
+
+# ABSTRACT: Upload tarball to my own site
 
 __END__
 
@@ -107,7 +91,7 @@ Dist::Zilla::Plugin::UploadToSFTP - Upload tarball to my own site
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 DESCRIPTION
 
